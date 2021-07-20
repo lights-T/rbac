@@ -1,0 +1,138 @@
+syntax = "proto3";
+
+import "github.com/mwitkow/go-proto-validators/validator.proto";
+
+service Rbac {
+  // 创建后台接口规则
+  rpc CreateRule (CreateRuleReq) returns (EmptyRsp) {
+  }
+  // 修改后台接口规则
+  rpc UpdateRule (UpdateRuleReq) returns (EmptyRsp) {
+  }
+  // 查询后台接口规则
+  rpc SelectRule (SelectRuleReq) returns (SelectRuleRsp) {
+  }
+  // 创建后台接口规则分组角色
+  rpc CreateAuthGroup (CreateAuthGroupReq) returns (EmptyRsp) {
+  }
+  // 修改后台接口规则分组角色
+  rpc UpdateAuthGroup (UpdateAuthGroupReq) returns (EmptyRsp) {
+  }
+  // 查询后台接口规则分组角色
+  rpc SelectAuthGroup (SelectAuthGroupReq) returns (SelectAuthGroupRsp) {
+  }
+  // 修改后台接口规则分组角色用户关系
+  rpc UpdateAuthGroupAccess (UpdateAuthGroupAccessReq) returns (EmptyRsp) {
+  }
+  // 校验后台访问权限
+  rpc VerifyUserAuth (VerifyUserAuthReq) returns (VerifyUserAuthRsp) {
+  }
+  // 获取用户前端菜单
+  rpc GetUserMenuReq (GetUserMenuReqReq) returns (GetUserMenuReqRsp) {
+  }
+}
+
+message GetUserMenuReqReq {
+  //用户id
+  int64 Uid = 1 [(validator.field) = {int_gt: 0}];
+}
+message GetUserMenuReqRsp{
+
+}
+
+message CreateRuleReq {
+  repeated RuleInfo Data = 1;
+}
+
+message RuleInfo  {
+  //规则唯一标识路径 模块/方法
+  string UrlPath = 1 [(validator.field) = {length_gt: 0}];
+  //规则中文名称 要逻辑化定义，给运营人员使用
+  string Title = 2 [(validator.field) = {length_gt: 0}];
+  //类型 1一级菜单 2二级菜单 3三级菜单
+  int32 Type = 3 [(validator.field) = {int_gt: 0}];
+  //父级id
+  int64 Pid = 4 ;
+  //排序 菜单使用，大的在前
+  int32 Sort = 5;
+  //已选中，为某角色分组的规则。查询分组信息所用
+  bool selected = 6;
+}
+
+message UpdateRuleReq  {
+  //规则唯一标识路径 模块/方法
+  string UrlPath = 1 [(validator.field) = {length_gt: 0}];
+  //规则中文名称 要逻辑化定义，给运营人员使用
+  string Title = 2;
+  //是否删除 1删除
+  int32 IsDelete = 3;
+  //排序 菜单使用，大的在前
+  int32 Sort = 4;
+}
+
+message SelectRuleReq {
+  //类型 1一级菜单 2二级菜单 3三级菜单
+  int32 Type = 1 ;
+}
+message SelectRuleRsp {
+  repeated RuleInfo list = 1;
+}
+
+message CreateAuthGroupReq  {
+  //分组角色名称
+  string Title = 1 [(validator.field) = {length_gt: 0}];
+  //权限动作ids
+  repeated  int64 RuleIds = 2 [(validator.field) = {repeated_count_min: 1}];
+}
+
+message UpdateAuthGroupReq  {
+  //分组角色id
+  int64 Id = 1 [(validator.field) = {int_gt: 0}];
+  //分组角色名称
+  string Title = 2;
+  //权限动作ids
+  repeated int64 RuleIds = 3;
+}
+
+message SelectAuthGroupReq  {
+  //分组角色id
+  int64 Id = 1;
+}
+
+message SelectAuthGroupRsp  {
+  repeated AuthGroupRuleInfo list = 1;
+}
+
+message AuthGroupRuleInfo  {
+  //分组角色id
+  int64 Id = 1 [(validator.field) = {int_gt: 0}];
+  //分组角色名称
+  string GroupTitle = 2;
+  string rules = 3;
+  repeated RuleInfo RuleList = 4;
+}
+
+message UpdateAuthGroupAccessReq  {
+  //用户id
+  int64 Uid = 1 [(validator.field) = {int_gt: 0}];
+  //分组ids
+  repeated int64 GroupIds = 2 [(validator.field) = {repeated_count_min: 1}];
+}
+
+message VerifyUserAuthReq  {
+  //用户id
+  int64 Uid = 1 [(validator.field) = {int_gt: 0}];
+  //接口请求路径 模块/方法
+  string UrlPath = 2 [(validator.field) = {length_gt: 0}];
+}
+
+message VerifyUserAuthRsp  {
+  //用户id
+  int64 Uid = 1;
+  //接口请求路径 模块/方法
+  string UrlPath = 2 ;
+  //验证结果 true通过
+  bool ok = 3;
+}
+
+message EmptyRsp{}
