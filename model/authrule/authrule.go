@@ -2,8 +2,6 @@ package authrule
 
 import (
 	"context"
-	"time"
-
 	. "github.com/lights-T/rbac/config"
 
 	"github.com/doug-martin/goqu/v9"
@@ -19,16 +17,16 @@ var (
 )
 
 type HAuthRule struct {
-	Id         int64     `db:"id" json:"id,omitempty" goqu:"pk,skipinsert,skipupdate"`    //
-	UrlPath    string    `db:"url_path" json:"urlPath,omitempty" goqu:"defaultifempty"`   // 规则唯一标识路径 模块/方法
-	Title      string    `db:"title" json:"title,omitempty" goqu:"defaultifempty"`        // 规则中文名称 要逻辑化定义，给运营人员使用
-	Type       int32     `db:"type" json:"type,omitempty" goqu:"defaultifempty"`          // 类型 1一级菜单 2二级菜单 3三级菜单 -1详情/按钮
-	IsDelete   int32     `db:"is_delete" json:"isDelete,omitempty" goqu:"defaultifempty"` // 是否删除 1删除
-	Pid        int64     `db:"pid" json:"pid,omitempty" goqu:"defaultifempty"`            // 父级ID
-	Sort       int32     `db:"sort" json:"sort,omitempty" goqu:"defaultifempty"`          // 排序
-	Icon       string    `db:"icon" json:"icon,omitempty" goqu:"defaultifempty"`          //
-	CreateTime time.Time `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
-	UpdateTime time.Time `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
+	Id         int64  `db:"id" json:"id,omitempty" goqu:"pk,skipinsert,skipupdate"`    //
+	UrlPath    string `db:"url_path" json:"urlPath,omitempty" goqu:"defaultifempty"`   // 规则唯一标识路径 模块/方法
+	Title      string `db:"title" json:"title,omitempty" goqu:"defaultifempty"`        // 规则中文名称 要逻辑化定义，给运营人员使用
+	Type       int32  `db:"type" json:"type,omitempty" goqu:"defaultifempty"`          // 类型 1一级菜单 2二级菜单 3三级菜单 -1详情/按钮
+	IsDelete   int32  `db:"is_delete" json:"isDelete,omitempty" goqu:"defaultifempty"` // 是否删除 1删除
+	Pid        int64  `db:"pid" json:"pid,omitempty" goqu:"defaultifempty"`            // 父级ID
+	Sort       int32  `db:"sort" json:"sort,omitempty" goqu:"defaultifempty"`          // 排序
+	Icon       string `db:"icon" json:"icon,omitempty" goqu:"defaultifempty"`          //
+	CreateTime string `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
+	UpdateTime string `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
 
 	NextMenus []*HAuthRule `json:"nextMenus,omitempty" goqu:"skipinsert,skipupdate"` //下一等级菜单
 }

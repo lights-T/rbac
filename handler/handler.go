@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/lights-T/rbac/enforcer"
 	"sort"
 	"strconv"
 	"strings"
@@ -13,6 +12,7 @@ import (
 	"github.com/lights-T/rbac/cache"
 	. "github.com/lights-T/rbac/config"
 	"github.com/lights-T/rbac/constant"
+	"github.com/lights-T/rbac/enforcer"
 	"github.com/lights-T/rbac/model/authgroup"
 	"github.com/lights-T/rbac/model/authgroupaccess"
 	"github.com/lights-T/rbac/model/authrule"
@@ -33,13 +33,14 @@ func NewHandler(enforcer *enforcer.Enforcer) (*Handler, error) {
 		TableNameGroupAccess: enforcer.TableNameGroupAccess,
 		RoleRuleHashKey:      enforcer.RoleRuleHashKey,
 	}
+
 	if err := InitGroupRule(); err != nil {
 		return nil, err
 	}
 	return new(Handler), nil
 }
 
-func (s *Handler) CreateRule(ctx context.Context, req *pb.CreateRuleReq, rsp *pb.EmptyRsp) error {
+func (s *Handler) CreateRule(ctx context.Context, req *pb.CreateRuleReq) error {
 	var err error
 	if err = req.Validate(); err != nil {
 		return err
@@ -134,7 +135,7 @@ func checkTypeByPid(pid int64, _type int32) error {
 	return nil
 }
 
-func (s *Handler) UpdateRule(ctx context.Context, req *pb.UpdateRuleReq, rsp *pb.EmptyRsp) error {
+func (s *Handler) UpdateRule(ctx context.Context, req *pb.UpdateRuleReq) error {
 	var err error
 	if err = req.Validate(); err != nil {
 		return err
@@ -175,23 +176,25 @@ func (s *Handler) UpdateRule(ctx context.Context, req *pb.UpdateRuleReq, rsp *pb
 	return nil
 }
 
-func (s *Handler) SelectRule(ctx context.Context, req *pb.SelectRuleReq, rsp *pb.SelectRuleRsp) error {
+func (s *Handler) SelectRule(ctx context.Context, req *pb.SelectRuleReq) (*pb.SelectRuleRsp, error) {
+	rsp := &pb.SelectRuleRsp{}
 	var err error
 	if err = req.Validate(); err != nil {
-		return err
+		return rsp, err
 	}
 	params := make(map[string]interface{})
 	if req.Type > 0 {
 		params["type"] = req.Type
 	}
 	params["is_delete"] = constant.UnDelete
-	list, err := authrule.SearchHAuthRuleWithFields(ctx, params)
+	ruleList, err := authrule.SearchHAuthRuleWithFields(ctx, params)
 	if err != nil {
-		return err
+		return rsp, err
 	}
 
-	for _, v := range list {
-		rsp.List = append(rsp.List, &pb.RuleInfo{
+	list := make([]*pb.RuleInfo, 0, len(ruleList))
+	for _, v := range ruleList {
+		list = append(list, &pb.RuleInfo{
 			UrlPath: v.UrlPath,
 			Title:   v.Title,
 			Type:    v.Type,
@@ -199,11 +202,11 @@ func (s *Handler) SelectRule(ctx context.Context, req *pb.SelectRuleReq, rsp *pb
 			Sort:    v.Sort,
 		})
 	}
-
-	return nil
+	rsp.List = list
+	return rsp, nil
 }
 
-func (s *Handler) CreateAuthGroup(ctx context.Context, req *pb.CreateAuthGroupReq, rsp *pb.EmptyRsp) error {
+func (s *Handler) CreateAuthGroup(ctx context.Context, req *pb.CreateAuthGroupReq) error {
 	var err error
 	if err = req.Validate(); err != nil {
 		return err
@@ -267,7 +270,7 @@ func CheckRule(ruleIds []int64) (string, error) {
 	return rules, nil
 }
 
-func (s *Handler) UpdateAuthGroup(ctx context.Context, req *pb.UpdateAuthGroupReq, rsp *pb.EmptyRsp) error {
+func (s *Handler) UpdateAuthGroup(ctx context.Context, req *pb.UpdateAuthGroupReq) error {
 	var err error
 	if err = req.Validate(); err != nil {
 		return err
@@ -305,10 +308,11 @@ func (s *Handler) UpdateAuthGroup(ctx context.Context, req *pb.UpdateAuthGroupRe
 	return nil
 }
 
-func (s *Handler) SelectAuthGroup(ctx context.Context, req *pb.SelectAuthGroupReq, rsp *pb.SelectAuthGroupRsp) error {
+func (s *Handler) SelectAuthGroup(ctx context.Context, req *pb.SelectAuthGroupReq) (*pb.SelectAuthGroupRsp, error) {
+	rsp := &pb.SelectAuthGroupRsp{}
 	var err error
 	if err = req.Validate(); err != nil {
-		return err
+		return rsp, err
 	}
 
 	params := make(map[string]interface{})
@@ -317,10 +321,10 @@ func (s *Handler) SelectAuthGroup(ctx context.Context, req *pb.SelectAuthGroupRe
 	}
 	groupList, err := authgroup.SearchHAuthGroupWithFields(ctx, params, []string{"id", "title", "rules"}...)
 	if err != nil {
-		return err
+		return rsp, err
 	}
 	if groupList == nil {
-		return errors.New("group data not found")
+		return rsp, errors.New("group data not found")
 	}
 	exps := exp.NewExpressionList(exp.AndType)
 	ruleIdsHash := make(map[string]string, 0)
@@ -331,21 +335,23 @@ func (s *Handler) SelectAuthGroup(ctx context.Context, req *pb.SelectAuthGroupRe
 			}
 		}
 	} else {
+		list := make([]*pb.AuthGroupRuleInfo, 0, len(groupList))
 		for _, g := range groupList {
-			rsp.List = append(rsp.List, &pb.AuthGroupRuleInfo{
+			list = append(list, &pb.AuthGroupRuleInfo{
 				Id:         g.Id,
 				GroupTitle: g.Title,
 				Rules:      g.Rules,
 			})
 		}
-		return nil
+		rsp.List = list
+		return rsp, nil
 	}
 	ruleList, err := authrule.SearchHAuthRuleWithFields(ctx, exps)
 	if err != nil {
-		return err
+		return rsp, err
 	}
 	if ruleList == nil {
-		return errors.New("rule data not found")
+		return rsp, errors.New("rule data not found")
 	}
 	rules := make([]*pb.RuleInfo, 0, len(ruleList))
 	for _, r := range ruleList {
@@ -362,14 +368,15 @@ func (s *Handler) SelectAuthGroup(ctx context.Context, req *pb.SelectAuthGroupRe
 		}
 		rules = append(rules, rule)
 	}
-	rsp.List = append(rsp.List, &pb.AuthGroupRuleInfo{
+	list := make([]*pb.AuthGroupRuleInfo, 1)
+	list = append(list, &pb.AuthGroupRuleInfo{
 		Id:         groupList[0].Id,
 		GroupTitle: groupList[0].Title,
 		Rules:      groupList[0].Rules,
 		RuleList:   rules,
 	})
-
-	return nil
+	rsp.List = list
+	return rsp, nil
 }
 
 func CheckGroupExist(title string, ids []int64) (int, error) {
@@ -393,7 +400,7 @@ func CheckGroupExist(title string, ids []int64) (int, error) {
 	return len(roles), nil
 }
 
-func (s *Handler) UpdateAuthGroupAccess(ctx context.Context, req *pb.UpdateAuthGroupAccessReq, rsp *pb.EmptyRsp) error {
+func (s *Handler) UpdateAuthGroupAccess(ctx context.Context, req *pb.UpdateAuthGroupAccessReq) error {
 	var err error
 	if err = req.Validate(); err != nil {
 		return err
@@ -485,27 +492,28 @@ func InitGroupRule() error {
 	return nil
 }
 
-func (s *Handler) VerifyUserAuth(ctx context.Context, req *pb.VerifyUserAuthReq, rsp *pb.VerifyUserAuthRsp) error {
+func (s *Handler) VerifyUserAuth(ctx context.Context, req *pb.VerifyUserAuthReq) (*pb.VerifyUserAuthRsp, error) {
+	rsp := &pb.VerifyUserAuthRsp{}
 	var err error
 	if err = req.Validate(); err != nil {
-		return err
+		return rsp, err
 	}
 	params := make(map[string]interface{})
 	params["uid"] = req.Uid
 	params["is_delete"] = constant.UnDelete
 	groupList, err := authgroupaccess.SearchHAuthGroupAccessWithFields(ctx, params, []string{"uid", "group_id"}...)
 	if err != nil {
-		return err
+		return rsp, err
 	}
 	if groupList == nil {
-		return errors.New("group data not found")
+		return rsp, errors.New("group data not found")
 	}
 	var rowId int64
 	for _, g := range groupList {
 		key := fmt.Sprintf("%d_%s", g.GroupId, req.UrlPath)
 		rowId, err = cache.HGetRoleRule(ctx, key)
 		if err != nil {
-			return err
+			return rsp, err
 		}
 		if rowId > 0 {
 			break
@@ -518,11 +526,11 @@ func (s *Handler) VerifyUserAuth(ctx context.Context, req *pb.VerifyUserAuthReq,
 	}
 	rsp.Uid = req.Uid
 	rsp.UrlPath = req.UrlPath
-	return nil
+	return rsp, nil
 }
 
 func (s *Handler) GetUserMenu(ctx context.Context, req *pb.VerifyUserAuthReq) (map[int64]*authrule.HAuthRule, error) {
-	var rsp map[int64]*authrule.HAuthRule
+	rsp := make(map[int64]*authrule.HAuthRule, 500)
 	var err error
 	if err = req.Validate(); err != nil {
 		return rsp, err
@@ -572,7 +580,7 @@ func (s *Handler) GetUserMenu(ctx context.Context, req *pb.VerifyUserAuthReq) (m
 	if ruleList == nil {
 		return rsp, errors.New("rule is not exist")
 	}
-	firstMenu := make(map[int64]*authrule.HAuthRule, 500)    //最终组合
+	firstMenu := rsp                                         //最终组合
 	secondMenu := make(map[int64][]*authrule.HAuthRule, 500) //[一级id]二级信息
 	threeMenu := make(map[int64][]*authrule.HAuthRule, 500)  //[二级id]三级信息
 	for _, rule := range ruleList {

@@ -105,20 +105,20 @@ func finalizer(a *Enforcer) {
 }
 
 type Enforcer struct {
-	driverName           string
-	dataSourceName       string
-	dbSpecified          bool
-	isFiltered           bool
-	engine               *xorm.Engine
+	driverName     string
+	dataSourceName string
+	engine         *xorm.Engine
+
 	tableNames           []string //tableNames注意顺序 第一个auth_rule 第二个auth_group 第三个auth_group_access
 	TableNameRule        string
 	TableNameGroup       string
 	TableNameGroupAccess string
-	RoleRuleHashKey      string //存放groupId_ruleUrlPath = ruleId    用于检查权限
 	dbAdapter            *db.DbAdapter
-	RedisClientAddress   []string
 	MasterDB             *goqu.Database
-	RedisClient          *redis.ClusterClient
+
+	RedisClientAddress []string
+	RoleRuleHashKey    string //存放groupId_ruleUrlPath = ruleId    用于检查权限
+	RedisClient        *redis.ClusterClient
 }
 
 func (a *Enforcer) open() error {

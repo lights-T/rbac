@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS %s (
 `
 
 var PgRbacAuthRule = `
-CREATE TABLE "public"."auth_rule" (
-  "id" int8 NOT NULL DEFAULT nextval('auth_rule_id_seq'::regclass),
+CREATE TABLE IF NOT EXISTS "public"."%s" (
+  "id" int8 NOT NULL DEFAULT nextval('%s_id_seq'::regclass),
   "url_path" varchar(50) COLLATE "pg_catalog"."default",
   "title" varchar(20) COLLATE "pg_catalog"."default",
   "type" int4 NOT NULL DEFAULT 1,
@@ -71,73 +71,73 @@ CREATE TABLE "public"."auth_rule" (
   "icon" varchar(50) COLLATE "pg_catalog"."default" NOT NULL DEFAULT ''::character varying,
   "create_time" timestamp(6) NOT NULL DEFAULT now(),
   "update_time" timestamp(6) NOT NULL DEFAULT now(),
-  CONSTRAINT "auth_rule_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "auth_group_unindex_urlPath" UNIQUE ("url_path")
+  CONSTRAINT "%s_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "%s_unindex_urlPath" UNIQUE ("url_path")
 )
 ;
 
-ALTER TABLE "public"."auth_rule" 
+ALTER TABLE "public"."%s" 
   OWNER TO "postgres";
 
-COMMENT ON COLUMN "public"."auth_rule"."url_path" IS '规则唯一标识路径 模块/方法';
+COMMENT ON COLUMN "public"."%s"."url_path" IS '规则唯一标识路径 模块/方法';
 
-COMMENT ON COLUMN "public"."auth_rule"."title" IS '规则中文名称 要逻辑化定义，给运营人员使用';
+COMMENT ON COLUMN "public"."%s"."title" IS '规则中文名称 要逻辑化定义，给运营人员使用';
 
-COMMENT ON COLUMN "public"."auth_rule"."type" IS '类型 1一级菜单 2二级菜单 3三级菜单';
+COMMENT ON COLUMN "public"."%s"."type" IS '类型 1一级菜单 2二级菜单 3三级菜单';
 
-COMMENT ON COLUMN "public"."auth_rule"."is_delete" IS '是否删除 1删除';
+COMMENT ON COLUMN "public"."%s"."is_delete" IS '是否删除 1删除';
 
-COMMENT ON COLUMN "public"."auth_rule"."pid" IS '父级ID';
+COMMENT ON COLUMN "public"."%s"."pid" IS '父级ID';
 
-COMMENT ON COLUMN "public"."auth_rule"."sort" IS '排序，大的在前';
+COMMENT ON COLUMN "public"."%s"."sort" IS '排序，大的在前';
 
-COMMENT ON COLUMN "public"."auth_rule"."icon" IS '图标';
+COMMENT ON COLUMN "public"."%s"."icon" IS '图标';
 
-COMMENT ON TABLE "public"."auth_rule" IS '用户权限动作表';
+COMMENT ON TABLE "public"."%s" IS '用户权限动作表';
 `
 
 var PgRbacAuthGroup = `
-CREATE TABLE "public"."auth_group" (
-  "id" int8 NOT NULL DEFAULT nextval('auth_group_id_seq'::regclass),
+CREATE TABLE IF NOT EXISTS "public"."%s" (
+  "id" int8 NOT NULL DEFAULT nextval('%s_id_seq'::regclass),
   "title" varchar(50) COLLATE "pg_catalog"."default",
   "rules" text COLLATE "pg_catalog"."default",
   "create_time" timestamp(6) NOT NULL DEFAULT now(),
   "update_time" timestamp(6) NOT NULL DEFAULT now(),
-  CONSTRAINT "auth_group_pkey" PRIMARY KEY ("id"),
-  CONSTRAINT "auth_group_unindex_title" UNIQUE ("title")
+  CONSTRAINT "%s_pkey" PRIMARY KEY ("id"),
+  CONSTRAINT "%s_unindex_title" UNIQUE ("title")
 )
 ;
 
-ALTER TABLE "public"."auth_group" 
+ALTER TABLE "public"."%s" 
   OWNER TO "postgres";
 
-COMMENT ON COLUMN "public"."auth_group"."title" IS '身份名称';
+COMMENT ON COLUMN "public"."%s"."title" IS '身份名称';
 
-COMMENT ON COLUMN "public"."auth_group"."rules" IS '权限动作id';
+COMMENT ON COLUMN "public"."%s"."rules" IS '权限动作id';
 
-COMMENT ON TABLE "public"."auth_group" IS '用户权限组表';
+COMMENT ON TABLE "public"."%s" IS '用户权限组表';
 `
 
 var PgRbacAuthGroupAccess = `
-CREATE TABLE "public"."auth_group_access" (
+CREATE TABLE IF NOT EXISTS "public"."%s" (
   "uid" int8 NOT NULL,
   "group_id" int8 NOT NULL,
   "is_delete" int4 NOT NULL DEFAULT 0,
   "create_time" timestamp(6) NOT NULL DEFAULT now(),
   "update_time" timestamp(6) NOT NULL DEFAULT now(),
-  CONSTRAINT "auth_group_access_unindex_uid_groupId" UNIQUE ("uid", "group_id"),
-  CONSTRAINT "auth_group_access_unindex_groupId" UNIQUE ("group_id")
+  CONSTRAINT "%s_unindex_uid_groupId" UNIQUE ("uid", "group_id"),
+  CONSTRAINT "%s_unindex_groupId" UNIQUE ("group_id")
 )
 ;
 
-ALTER TABLE "public"."auth_group_access" 
+ALTER TABLE "public"."%s" 
   OWNER TO "postgres";
 
-COMMENT ON COLUMN "public"."auth_group_access"."uid" IS '用户id';
+COMMENT ON COLUMN "public"."%s"."uid" IS '用户id';
 
-COMMENT ON COLUMN "public"."auth_group_access"."group_id" IS '身份id';
+COMMENT ON COLUMN "public"."%s"."group_id" IS '身份id';
 
-COMMENT ON COLUMN "public"."auth_group_access"."is_delete" IS '是否删除 1删除';
+COMMENT ON COLUMN "public"."%s"."is_delete" IS '是否删除 1删除';
 
-COMMENT ON TABLE "public"."auth_group_access" IS '用户权限身份关系表';
+COMMENT ON TABLE "public"."%s" IS '用户权限身份关系表';
 `

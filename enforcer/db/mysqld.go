@@ -3,11 +3,15 @@ package db
 import (
 	"errors"
 	"fmt"
+	"os"
 
 	"github.com/lights-T/rbac/config"
 
 	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/mysql"
+	_ "github.com/go-sql-driver/mysql"
 	"github.com/lights-T/lib-go/database/db"
+	"github.com/rs/zerolog"
 )
 
 type mysql struct {
@@ -35,7 +39,9 @@ func (s *mysql) NewDriver(address string) (*goqu.Database, error) {
 	if self = nDb.GetInstance(""); self == nil {
 		return self, errors.New("database init fail ")
 	}
-
+	l := zerolog.New(os.Stderr)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
+	self.Logger(&l)
 	return self, nil
 }
 

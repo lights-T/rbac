@@ -16,13 +16,13 @@ func init() {
 	}
 }
 
-func Test(t *testing.T) {
+func Test_mysql(t *testing.T) {
 	ctx, cance := context.WithTimeout(context.TODO(), time.Second)
 	defer cance()
 	driverName := "mysql"
-	dataSourceName := "root:123456@tcp(127.0.0.1:3306)/test1?charset=utf8"
+	dataSourceName := "root:123456@tcp(127.0.0.1:3306)/test?charset=utf8"
 	e, err := enforcer.NewEnforcer(
-		enforcer.WithDbConfig(driverName, dataSourceName, []string{"auth_rule", "auth_group", "auth_group_access"}...),
+		enforcer.WithDbConfig(driverName, dataSourceName, []string{"h_auth_rule", "h_auth_group", "h_auth_group_access"}...),
 		enforcer.WithRedisConfig("elysium:admin:roleRule", []string{"10.4.61.61:9001", "10.4.61.61:9002", "10.4.61.61:9003"}...),
 	)
 	if err != nil {
@@ -32,10 +32,42 @@ func Test(t *testing.T) {
 	if err != nil {
 		logger.Fatal(err)
 	}
-	req := &pb.SelectRuleReq{}
-	rsp := &pb.SelectRuleRsp{}
-	_ = handler.SelectRule(ctx, req, rsp)
-	t.Log(rsp)
+	t.Run("查询", func(t *testing.T) {
+		req := &pb.SelectRuleReq{}
+		rsp := &pb.SelectRuleRsp{}
+		rsp, err = handler.SelectRule(ctx, req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(rsp)
+	})
+}
+
+func Test_pg(t *testing.T) {
+	ctx, cance := context.WithTimeout(context.TODO(), time.Second)
+	defer cance()
+	driverName := "postgres"
+	dataSourceName := "postgres://postgres:pgsql123@10.4.61.84:5432/d_user?sslmode=disable"
+	e, err := enforcer.NewEnforcer(
+		enforcer.WithDbConfig(driverName, dataSourceName, []string{"t_auth_rule", "t_auth_group", "t_auth_group_access"}...),
+		enforcer.WithRedisConfig("elysium:admin:roleRule", []string{"10.4.61.61:9001", "10.4.61.61:9002", "10.4.61.61:9003"}...),
+	)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	handler, err := NewHandler(e)
+	if err != nil {
+		logger.Fatal(err)
+	}
+	t.Run("查询", func(t *testing.T) {
+		req := &pb.SelectRuleReq{}
+		rsp := &pb.SelectRuleRsp{}
+		rsp, err = handler.SelectRule(ctx, req)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(rsp)
+	})
 
 }
 

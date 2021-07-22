@@ -9,6 +9,8 @@ import (
 	"github.com/lights-T/rbac/config"
 
 	"github.com/doug-martin/goqu/v9"
+	_ "github.com/doug-martin/goqu/v9/dialect/postgres"
+	_ "github.com/lib/pq"
 	"github.com/rs/zerolog"
 )
 
@@ -29,6 +31,7 @@ func (s *pg) NewDriver(address string) (*goqu.Database, error) {
 	self = dialect.DB(pgDb)
 
 	l := zerolog.New(os.Stderr)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 	self.Logger(&l)
 	return self, nil
 }
@@ -49,15 +52,15 @@ func (s *pg) CreateTable(tableName ...string) error {
 	for k, name := range tableName {
 		switch k {
 		case 0:
-			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthRule, name)); err != nil {
+			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthRule, name, name, name, name, name, name, name, name, name, name, name, name, name)); err != nil {
 				return err
 			}
 		case 1:
-			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthGroup, name)); err != nil {
+			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthGroup, name, name, name, name, name, name, name, name)); err != nil {
 				return err
 			}
 		case 2:
-			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthGroupAccess, name)); err != nil {
+			if _, err = s.Engine.Exec(fmt.Sprintf(config.PgRbacAuthGroupAccess, name, name, name, name, name, name, name, name)); err != nil {
 				return err
 			}
 		}

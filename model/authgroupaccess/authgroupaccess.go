@@ -2,8 +2,6 @@ package authgroupaccess
 
 import (
 	"context"
-	"time"
-
 	. "github.com/lights-T/rbac/config"
 
 	"github.com/doug-martin/goqu/v9"
@@ -19,11 +17,11 @@ var (
 )
 
 type HAuthGroupAccess struct {
-	Uid        int64     `db:"uid" json:"uid,omitempty" goqu:"defaultifempty"`            // 用户id
-	GroupId    int64     `db:"group_id" json:"groupId,omitempty" goqu:"defaultifempty"`   // 身份id
-	IsDelete   int32     `db:"is_delete" json:"isDelete,omitempty" goqu:"defaultifempty"` // 是否删除 1删除
-	CreateTime time.Time `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
-	UpdateTime time.Time `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
+	Uid        int64  `db:"uid" json:"uid,omitempty" goqu:"defaultifempty"`            // 用户id
+	GroupId    int64  `db:"group_id" json:"groupId,omitempty" goqu:"defaultifempty"`   // 身份id
+	IsDelete   int32  `db:"is_delete" json:"isDelete,omitempty" goqu:"defaultifempty"` // 是否删除 1删除
+	CreateTime string `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
+	UpdateTime string `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
 }
 
 // GetHAuthGroupAccess exps 支持 map[string]interface{} 或 goqu 表达式（eq: exp.NewExpressionList(exp.AndType).Append(goqu.C(k).Eq(v))）

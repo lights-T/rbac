@@ -2,7 +2,6 @@ package authgroup
 
 import (
 	"context"
-	"time"
 
 	. "github.com/lights-T/rbac/config"
 
@@ -19,11 +18,11 @@ var (
 )
 
 type HAuthGroup struct {
-	Id         int64     `db:"id" json:"id,omitempty" goqu:"pk,skipinsert,skipupdate"` //
-	Title      string    `db:"title" json:"title,omitempty" goqu:"defaultifempty"`     // 身份名称
-	Rules      string    `db:"rules" json:"rules,omitempty" goqu:"defaultifempty"`     // 权限动作id
-	CreateTime time.Time `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
-	UpdateTime time.Time `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
+	Id         int64  `db:"id" json:"id,omitempty" goqu:"pk,skipinsert,skipupdate"` //
+	Title      string `db:"title" json:"title,omitempty" goqu:"defaultifempty"`     // 身份名称
+	Rules      string `db:"rules" json:"rules,omitempty" goqu:"defaultifempty"`     // 权限动作id
+	CreateTime string `json:"createTime" db:"create_time" goqu:"skipinsert,skipupdate"`
+	UpdateTime string `json:"updateTime" db:"update_time" goqu:"skipinsert,skipupdate"`
 }
 
 // GetHAuthGroup exps 支持 map[string]interface{} 或 goqu 表达式（eq: exp.NewExpressionList(exp.AndType).Append(goqu.C(k).Eq(v))）
